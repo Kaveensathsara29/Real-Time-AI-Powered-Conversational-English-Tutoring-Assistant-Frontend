@@ -1,12 +1,19 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Volume2, User, Bot, AlertCircle } from 'lucide-react';
+import { ChatMessage } from '../types';
+
+interface ChatTranscriptProps {
+  messages: ChatMessage[];
+  onPlayMessage: (text: string, audioBase64?: string) => void;
+  onWordClick: (word: string) => void;
+}
 
 export default function ChatTranscript({
   messages,
   onPlayMessage,
   onWordClick
-}) {
-  const messagesEndRef = useRef(null);
+}: ChatTranscriptProps) {
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

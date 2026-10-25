@@ -1,19 +1,27 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Sparkles, Mic, Volume2 } from 'lucide-react';
+
+interface AudioVisualizerProps {
+  isListening: boolean;
+  isSpeaking: boolean;
+  isThinking: boolean;
+  analyserNode: AnalyserNode | null;
+}
 
 export default function AudioVisualizer({
   isListening,
   isSpeaking,
   isThinking,
   analyserNode
-}) {
-  const canvasRef = useRef(null);
-  const animationFrameRef = useRef(null);
+}: AudioVisualizerProps) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
     let phase = 0;
     const dataArray = analyserNode ? new Uint8Array(analyserNode.frequencyBinCount) : null;
@@ -150,9 +158,9 @@ export default function AudioVisualizer({
   }, [isListening, isSpeaking, isThinking, analyserNode]);
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden `bg-gradient-to-b` from-slate-900/80 via-[#0a0f1d]/90 to-slate-950 border border-slate-800/80 shadow-2xl p-4 backdrop-blur-xl">
+    <div className="relative w-full rounded-2xl overflow-hidden bg-gradient-to-b from-slate-900/80 via-[#0a0f1d]/90 to-slate-950 border border-slate-800/80 shadow-2xl p-4 backdrop-blur-xl">
       {/* Decorative cyber grid lines */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] `bg-[size:24px_24px]` pointer-events-none" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
       {/* Status Badges */}
       <div className="relative z-10 flex items-center justify-between mb-2">

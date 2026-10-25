@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Sparkles, Settings, Flame, MessageSquare, Headphones, Award, AlertTriangle } from 'lucide-react';
 import AudioVisualizer from './components/AudioVisualizer';
 import VoiceControls from './components/VoiceControls';
@@ -7,8 +7,9 @@ import ScenarioSelector from './components/ScenarioSelector';
 import ChatTranscript from './components/ChatTranscript';
 import PronunciationModal from './components/PronunciationModal';
 import SettingsModal from './components/SettingsModal';
+import { Scenario, Voice, ChatMessage, FeedbackData, AIResponsePayload } from './types';
 
-const DEFAULT_SCENARIOS = [
+const DEFAULT_SCENARIOS: Scenario[] = [
   {
     id: 'casual',
     title: 'Casual Coffee Chat',
@@ -16,7 +17,6 @@ const DEFAULT_SCENARIOS = [
     cefr_level: 'A2 - B1',
     difficulty: 'Easy',
     icon: 'Coffee',
-    
   },
   {
     id: 'job_interview',
@@ -25,7 +25,6 @@ const DEFAULT_SCENARIOS = [
     cefr_level: 'B2 - C1',
     difficulty: 'Advanced',
     icon: 'Briefcase',
-   
   },
   {
     id: 'ielts_speaking',
@@ -34,7 +33,6 @@ const DEFAULT_SCENARIOS = [
     cefr_level: 'B1 - C2',
     difficulty: 'Challenging',
     icon: 'GraduationCap',
-   
   },
   {
     id: 'restaurant',
@@ -43,7 +41,6 @@ const DEFAULT_SCENARIOS = [
     cefr_level: 'A1 - B1',
     difficulty: 'Beginner',
     icon: 'Utensils',
-  
   },
   {
     id: 'debate',
@@ -52,7 +49,6 @@ const DEFAULT_SCENARIOS = [
     cefr_level: 'B2 - C2',
     difficulty: 'Master',
     icon: 'Flame',
-   
   },
   {
     id: 'travel_airport',
@@ -61,11 +57,10 @@ const DEFAULT_SCENARIOS = [
     cefr_level: 'A2 - B2',
     difficulty: 'Practical',
     icon: 'Plane',
-   
   }
 ];
 
-const DEFAULT_VOICES = [
+const DEFAULT_VOICES: Voice[] = [
   { id: 'en-US-JennyNeural', name: 'Jenny', accent: 'American', gender: 'Female' },
   { id: 'en-US-GuyNeural', name: 'Guy', accent: 'American', gender: 'Male' },
   { id: 'en-GB-SoniaNeural', name: 'Sonia', accent: 'British', gender: 'Female' },
@@ -76,20 +71,20 @@ const DEFAULT_VOICES = [
 
 export default function App() {
   // State variables
-  const [messages, setMessages] = useState([]);
-  const [scenarios, setScenarios] = useState(DEFAULT_SCENARIOS);
-  const [selectedScenarioId, setSelectedScenarioId] = useState('casual');
-  const [voices, setVoices] = useState(DEFAULT_VOICES);
-  const [selectedVoice, setSelectedVoice] = useState('en-US-JennyNeural');
-  const [speechRate, setSpeechRate] = useState(1.0);
-  const [provider, setProvider] = useState(() => {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [scenarios, setScenarios] = useState<Scenario[]>(DEFAULT_SCENARIOS);
+  const [selectedScenarioId, setSelectedScenarioId] = useState<string>('casual');
+  const [voices, setVoices] = useState<Voice[]>(DEFAULT_VOICES);
+  const [selectedVoice, setSelectedVoice] = useState<string>('en-US-JennyNeural');
+  const [speechRate, setSpeechRate] = useState<number>(1.0);
+  const [provider, setProvider] = useState<string>(() => {
     return localStorage.getItem('ai_provider') || 'builtin';
   });
-  const [apiKey, setApiKey] = useState(() => {
+  const [apiKey, setApiKey] = useState<string>(() => {
     return localStorage.getItem('gemini_api_key') || '';
   });
 
-  const handleUpdateApiKey = (key) => {
+  const handleUpdateApiKey = (key: string) => {
     setApiKey(key);
     localStorage.setItem('gemini_api_key', key);
     if (key.trim()) {
@@ -98,31 +93,36 @@ export default function App() {
     }
   };
 
-  const handleUpdateProvider = (newProvider) => {
+  const handleUpdateProvider = (newProvider: string) => {
     setProvider(newProvider);
     localStorage.setItem('ai_provider', newProvider);
   };
   
   // Voice states
-  const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isThinking, setIsThinking] = useState(false);
-  const [autoListen, setAutoListen] = useState(false);
-  const [currentFeedback, setCurrentFeedback] = useState(null);
+  const [isListening, setIsListening] = useState<boolean>(false);
+  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+  const [isThinking, setIsThinking] = useState<boolean>(false);
+  const [autoListen, setAutoListen] = useState<boolean>(false);
+  const [currentFeedback, setCurrentFeedback] = useState<FeedbackData | null>(null);
+  const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
 
   // Modals & UI helpers
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [pronunciationWord, setPronunciationWord] = useState(null);
-  const [micError, setMicError] = useState(null);
-  const [showTextInput, setShowTextInput] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [pronunciationWord, setPronunciationWord] = useState<string | null>(null);
+  const [micError, setMicError] = useState<string | null>(null);
+  const [showTextInput, setShowTextInput] = useState<boolean>(false);
 
   // Audio Context & WebSocket refs
-  const audioContextRef = useRef(null);
-  const analyserRef = useRef(null);
-  const micStreamRef = useRef(null);
-  const recognitionRef = useRef(null);
-  const currentAudioRef = useRef(null);
-  const wsRef = useRef(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const micStreamRef = useRef<MediaStream | null>(null);
+  const recognitionRef = useRef<any>(null);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+
+  // Mutable callback refs to ensure WebSocket and SpeechRecognition handlers always call latest state
+  const handleReceiveAIResponseRef = useRef<(data: AIResponsePayload) => void>(() => {});
+  const handleUserSpeechFinalRef = useRef<(text: string) => void>(() => {});
 
   // Fetch scenarios and voices from backend on load
   useEffect(() => {
@@ -146,7 +146,7 @@ export default function App() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws/conversation`;
     
-    let socket = null;
+    let socket: WebSocket | null = null;
     let isMounted = true;
     try {
       socket = new WebSocket(wsUrl);
@@ -161,12 +161,12 @@ export default function App() {
       socket.onmessage = (event) => {
         if (!isMounted) return;
         try {
-          const data = JSON.parse(event.data);
+          const data: AIResponsePayload = JSON.parse(event.data);
           if (data.type === 'ai_thinking') {
             setIsThinking(true);
           } else if (data.type === 'ai_response') {
             setIsThinking(false);
-            handleReceiveAIResponse(data);
+            handleReceiveAIResponseRef.current(data);
           }
         } catch (e) {
           console.error('WS parse error:', e);
@@ -189,7 +189,7 @@ export default function App() {
           socket.close(1000, 'Component unmounted');
         } else if (socket.readyState === WebSocket.CONNECTING) {
           socket.onopen = () => {
-            try { socket.close(1000, 'Unmounted while connecting'); } catch {}
+            try { socket?.close(1000, 'Unmounted while connecting'); } catch {}
           };
         }
       }
@@ -206,14 +206,14 @@ export default function App() {
     recognition.interimResults = false;
     recognition.lang = 'en-US';
 
-    recognition.onresult = (event) => {
+    recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
       if (transcript.trim()) {
-        handleUserSpeechFinal(transcript.trim());
+        handleUserSpeechFinalRef.current(transcript.trim());
       }
     };
 
-    recognition.onerror = (event) => {
+    recognition.onerror = (event: any) => {
       console.warn('Speech recognition notice:', event.error);
       setIsListening(false);
       if (event.error === 'not-allowed') {
@@ -237,7 +237,7 @@ export default function App() {
   }, []);
 
   // Initialize Web Audio API Analyser for Live Mic Frequency Waveform
-  const initAudioAnalyser = async () => {
+  const initAudioAnalyser = async (): Promise<boolean> => {
     if (analyserRef.current) return true;
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -254,9 +254,10 @@ export default function App() {
       analyser.fftSize = 256;
       source.connect(analyser);
       analyserRef.current = analyser;
+      setAnalyserNode(analyser);
       setMicError(null);
       return true;
-    } catch (err) {
+    } catch (err: any) {
       console.warn('Microphone stream access notice:', err);
       if (err.name === 'NotFoundError' || err.message?.includes('Requested device not found')) {
         setMicError('No microphone hardware detected on your device. Please plug in a microphone or type your sentence below.');
@@ -292,7 +293,7 @@ export default function App() {
           setMicError('Speech recognition is not supported in this browser. Please use Chrome, Edge, or type your message below.');
           setShowTextInput(true);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.warn('Speech recognition start notice:', err);
         setIsListening(false);
         if (err.name !== 'InvalidStateError') {
@@ -304,7 +305,7 @@ export default function App() {
   };
 
   // Play audio from base64 or Edge-TTS or fallback to SpeechSynthesis
-  const playSpeechAudio = (text, audioBase64 = null, customRate = null) => {
+  const playSpeechAudio = (text: string, audioBase64: string | null = null, customRate: number | null = null) => {
     handleStopSpeaking();
     setIsSpeaking(true);
 
@@ -331,7 +332,7 @@ export default function App() {
   };
 
   // Fallback to client SpeechSynthesis
-  const fallbackSpeechSynthesis = (text, customRate = null) => {
+  const fallbackSpeechSynthesis = (text: string, customRate: number | null = null) => {
     if (!window.speechSynthesis) {
       setIsSpeaking(false);
       return;
@@ -367,11 +368,11 @@ export default function App() {
   };
 
   // Process user utterance
-  const handleUserSpeechFinal = async (text) => {
+  const handleUserSpeechFinal = async (text: string) => {
     setIsListening(false);
     setIsThinking(true);
 
-    const userMsg = {
+    const userMsg: ChatMessage = {
       role: 'user',
       content: text,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -405,7 +406,7 @@ export default function App() {
             return_audio: true
           })
         });
-        const data = await res.json();
+        const data: AIResponsePayload = await res.json();
         setIsThinking(false);
         handleReceiveAIResponse(data);
       } catch (err) {
@@ -416,10 +417,10 @@ export default function App() {
   };
 
   // Handle incoming AI response payload
-  const handleReceiveAIResponse = (data) => {
-    const aiMsg = {
+  const handleReceiveAIResponse = (data: AIResponsePayload) => {
+    const aiMsg: ChatMessage = {
       role: 'assistant',
-      content: data.reply,
+      content: data.reply || '',
       grammar_feedback: data.grammar_feedback,
       audio_base64: data.audio_base64,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -438,25 +439,30 @@ export default function App() {
 
     // Play AI voice
     if (data.reply) {
-      playSpeechAudio(data.reply, data.audio_base64);
+      playSpeechAudio(data.reply, data.audio_base64 || null);
     }
   };
+
+  useEffect(() => {
+    handleReceiveAIResponseRef.current = handleReceiveAIResponse;
+    handleUserSpeechFinalRef.current = handleUserSpeechFinal;
+  });
 
   // Replay tutor's last utterance
   const handleReplayLast = () => {
     const lastAiMsg = [...messages].reverse().find(m => m.role === 'assistant');
     if (lastAiMsg) {
-      playSpeechAudio(lastAiMsg.content, lastAiMsg.audio_base64);
+      playSpeechAudio(lastAiMsg.content, lastAiMsg.audio_base64 || null);
     }
   };
 
   // Starter prompt clicked
-  const handleSelectStarter = (starterText) => {
+  const handleSelectStarter = (starterText: string) => {
     handleUserSpeechFinal(starterText);
   };
 
   // Practice phrase clicked from Feedback HUD
-  const handlePracticePhrase = (phrase) => {
+  const handlePracticePhrase = (phrase: string) => {
     playSpeechAudio(phrase, null, 0.85);
   };
 
@@ -516,7 +522,7 @@ export default function App() {
             isListening={isListening}
             isSpeaking={isSpeaking}
             isThinking={isThinking}
-            analyserNode={analyserRef.current}
+            analyserNode={analyserNode}
           />
 
           {/* Scenario Selector & Starters */}
@@ -610,7 +616,7 @@ export default function App() {
               Pro Speaking Tip
             </h4>
             <p className="text-xs text-slate-400 leading-relaxed">
-            Listen to native speakers on podcasts or videos, and repeat after them, mimicking how they group words together rather than reading them flatly.
+              Listen to native speakers on podcasts or videos, and repeat after them, mimicking how they group words together rather than reading them flatly.
             </p>
           </div>
         </div>
@@ -621,13 +627,12 @@ export default function App() {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-2.5 text-center sm:text-left text-sm text-slate-400 font-mono">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,210,255,0.7)]" />
-            <span>&copy;{new Date().getFullYear()} <strong className="text-slate-200">MASTEREnglish.</strong>All rights reserved.</span>
+            <span>&copy;{new Date().getFullYear()} <strong className="text-slate-200">MASTEREnglish.</strong> All rights reserved.</span>
           </div>
-          
         </div>
         <div>
-            <span className='flex justify-center text-xs'>Developed by &nbsp;<strong className="text-cyan-300 tracking-wider">KAVEEN SATHSARA.</strong></span>
-          </div>
+          <span className="flex justify-center text-xs">Developed by &nbsp;<strong className="text-cyan-300 tracking-wider">KAVEEN SATHSARA.</strong></span>
+        </div>
       </footer>
 
       {/* Modals */}

@@ -1,15 +1,22 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { X, Volume2, Mic, Sparkles } from 'lucide-react';
+
+interface PronunciationModalProps {
+  word: string | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onPlayAudio: (word: string, rate: number) => void;
+}
 
 export default function PronunciationModal({
   word,
   isOpen,
   onClose,
   onPlayAudio
-}) {
-  const [userSpoken, setUserSpoken] = useState(null);
-  const [isPracticing, setIsPracticing] = useState(false);
-  const [matchScore, setMatchScore] = useState(null);
+}: PronunciationModalProps) {
+  const [userSpoken, setUserSpoken] = useState<string | null>(null);
+  const [isPracticing, setIsPracticing] = useState<boolean>(false);
+  const [matchScore, setMatchScore] = useState<number | null>(null);
 
   if (!isOpen || !word) return null;
 
@@ -40,7 +47,7 @@ export default function PronunciationModal({
     setIsPracticing(true);
     setMatchScore(null);
 
-    recognition.onresult = (event) => {
+    recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript.toLowerCase().trim();
       setUserSpoken(transcript);
       setIsPracticing(false);

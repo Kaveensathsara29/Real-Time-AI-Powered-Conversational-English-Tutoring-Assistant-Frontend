@@ -1,11 +1,17 @@
-﻿import React from 'react';
 import { AlertCircle, CheckCircle2, Sparkles, Award, TrendingUp, BookOpen, Volume2 } from 'lucide-react';
+import { FeedbackData } from '../types';
+
+interface FeedbackHUDProps {
+  currentFeedback: FeedbackData | null;
+  onPracticePhrase: (phrase: string) => void;
+  onOpenPronunciation: (word: string) => void;
+}
 
 export default function FeedbackHUD({
   currentFeedback,
   onPracticePhrase,
   onOpenPronunciation
-}) {
+}: FeedbackHUDProps) {
   if (!currentFeedback) {
     return (
       <div className="rounded-2xl p-5 bg-slate-900/40 border border-slate-800/80 backdrop-blur-md flex flex-col items-center justify-center text-center h-full min-h-[260px]">

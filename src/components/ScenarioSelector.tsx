@@ -1,7 +1,7 @@
-import React from 'react';
-import { Coffee, Briefcase, GraduationCap, Utensils, Flame, Plane } from 'lucide-react';
+import { Coffee, Briefcase, GraduationCap, Utensils, Flame, Plane, LucideIcon } from 'lucide-react';
+import { Scenario } from '../types';
 
-const ICON_MAP = {
+const ICON_MAP: Record<string, LucideIcon> = {
   Coffee: Coffee,
   Briefcase: Briefcase,
   GraduationCap: GraduationCap,
@@ -10,11 +10,18 @@ const ICON_MAP = {
   Plane: Plane
 };
 
+interface ScenarioSelectorProps {
+  scenarios: Scenario[];
+  selectedScenarioId: string;
+  onSelectScenario: (id: string) => void;
+  onSelectStarter?: (starter: string) => void;
+}
+
 export default function ScenarioSelector({
   scenarios,
   selectedScenarioId,
   onSelectScenario,
-}) {
+}: ScenarioSelectorProps) {
   const activeScenario = scenarios.find(s => s.id === selectedScenarioId) || scenarios[0];
 
   return (
@@ -60,7 +67,6 @@ export default function ScenarioSelector({
               </span>
             </div>
           </div>
-         
         </div>
       )}
     </div>

@@ -1,5 +1,20 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { X, Sliders, Volume2, Key, Globe, ExternalLink, Eye, EyeOff } from 'lucide-react';
+import { Voice } from '../types';
+
+interface SettingsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  voices: Voice[];
+  selectedVoice: string;
+  onChangeVoice: (voice: string) => void;
+  speechRate: number;
+  onChangeSpeechRate: (rate: number) => void;
+  apiKey: string;
+  onChangeApiKey: (key: string) => void;
+  provider: string;
+  onChangeProvider: (provider: string) => void;
+}
 
 export default function SettingsModal({
   isOpen,
@@ -13,8 +28,8 @@ export default function SettingsModal({
   onChangeApiKey,
   provider,
   onChangeProvider
-}) {
-  const [showKey, setShowKey] = useState(false);
+}: SettingsModalProps) {
+  const [showKey, setShowKey] = useState<boolean>(false);
 
   if (!isOpen) return null;
 

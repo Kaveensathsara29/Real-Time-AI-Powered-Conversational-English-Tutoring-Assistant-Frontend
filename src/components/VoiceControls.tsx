@@ -1,5 +1,21 @@
-import React, { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import { Mic, Volume2, Square, RotateCcw, Send, Radio, Keyboard, Trash2, Sparkles } from 'lucide-react';
+
+interface VoiceControlsProps {
+  isListening: boolean;
+  isSpeaking: boolean;
+  isThinking: boolean;
+  autoListen: boolean;
+  onToggleListen: () => void;
+  onToggleAutoListen: () => void;
+  onStopSpeaking: () => void;
+  onReplayLast: () => void;
+  onSendMessage: (text: string) => void;
+  onClearChat: () => void;
+  disabled: boolean;
+  showTextInput?: boolean;
+  onToggleTextInput?: () => void;
+}
 
 export default function VoiceControls({
   isListening,
@@ -15,13 +31,13 @@ export default function VoiceControls({
   disabled,
   showTextInput: controlledShowTextInput,
   onToggleTextInput: controlledOnToggleTextInput
-}) {
-  const [localShowTextInput, setLocalShowTextInput] = useState(false);
+}: VoiceControlsProps) {
+  const [localShowTextInput, setLocalShowTextInput] = useState<boolean>(false);
   const showTextInput = controlledShowTextInput !== undefined ? controlledShowTextInput : localShowTextInput;
   const toggleTextInput = controlledOnToggleTextInput || (() => setLocalShowTextInput(!localShowTextInput));
-  const [textDraft, setTextDraft] = useState('');
+  const [textDraft, setTextDraft] = useState<string>('');
 
-  const handleTextSubmit = (e) => {
+  const handleTextSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!textDraft.trim()) return;
     onSendMessage(textDraft.trim());
